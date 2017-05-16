@@ -1,3 +1,4 @@
 # hello.py
 
-print 'Hello, world!'
+name = raw_input()
+print 'hello,', name
