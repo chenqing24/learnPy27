@@ -10,6 +10,26 @@ __author__ = 'Jeff Chen'
 封装基本的SELECT、INSERT、UPDATE和DELETE操作的db模块
 '''
 
+class Dict(dict):
+    '''
+    反馈结果的字典
+    '''
+    def __init__(self, names=(), values=(), **kwargs):
+        super(Dict, self).__init__(**kwargs)
+        for k, v in zip(names, values):
+            self[k] = v
+
+    def __getattr__(self, item):
+        try:
+            return self[item]
+        except:
+            logging.warning('Dict get error...')
+            raise
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
 # db引擎对象
 class _Engine(object):
     def __init__(self, connect):
