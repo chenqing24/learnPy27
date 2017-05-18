@@ -219,3 +219,26 @@ def _select(sql, *args):
         if cursor:
             cursor.close()
 
+
+@with_connection
+def select(sql, *args):
+    '''
+    执行query，反馈结果
+    :param sql: 
+    :param args: 
+    :return: 
+    '''
+    global _db_ctx
+    cursor = None
+    sql = sql.replace('?', '%s')
+    logging.info('SQL: %s, ARGS: %s' % (sql, args))
+    try:
+        cursor = _db_ctx.connection.cursor()
+        cursor.execute(sql, args)
+        if cursor.description:
+            names = [x[0] for x in cursor.description]
+        return [Dict(names, x) for x in cursor.fetchall()]
+    finally:
+        if cursor:
+            cursor.close()
+
