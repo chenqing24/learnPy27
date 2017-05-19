@@ -242,3 +242,26 @@ def select(sql, *args):
         if cursor:
             cursor.close()
 
+
+@with_connection
+def update(sql, *args):
+    '''
+    执行dml，反馈记录数
+    :param sql: 
+    :param args: 
+    :return: 
+    '''
+    global _db_ctx
+    cursor = None
+    sql = sql.replace('?', '%s')
+    logging.info('SQL: %s, ARGS: %s' % (sql, args))
+    try:
+        cursor = _db_ctx.connection.cursor()
+        cursor.execute(sql, args)
+        r = cursor.rowcount
+        if _db_ctx.transactions == 0:
+            _db_ctx.connection.commit()
+        return r
+    finally:
+        if cursor:
+            cursor.close()
