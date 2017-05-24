@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
 
 __author__ = 'Jeff Chen'
 
@@ -53,10 +54,10 @@ class ModelMetaclass(type):
         for k in mappings.iterkeys():
             attrs.pop(k)
 
+        attrs['__table__'] = name # 类名与表名一致
+        attrs['__mappings__'] = mappings # 属性与列映射
 
-
-
-
+        return type.__new__(cls, name, bases, attrs)
 
 
 class Model(dict):
@@ -65,3 +66,25 @@ class Model(dict):
     '''
     __metaclass__ = ModelMetaclass
 
+    def __init__(self, **kwargs):
+        super(Model, self).__init__(**kwargs)
+
+    def __getattr__(self, item):
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError('Model not find attr: %s' % item)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def save(self):
+        fields = []
+        params = []
+        args = []
+        for k, v in self.__mappings__.iteritems():
+            fields.append(v.name)
+            params.append('?')
+            args.append(getattr(self, k, None))
+        sql = 'insert into %s (%s) values (%s)' % (self.__table__, ','.join(fields), ','.join(params))
+        logging.info('SQL: %s, ARGS: %s' % (sql, args))
